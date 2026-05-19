@@ -679,14 +679,23 @@ function renderResult(sections) {
   document.getElementById('result-content').innerHTML = html;
 }
 
-document.getElementById('btn-share').addEventListener('click', () => {
-  navigator.clipboard.writeText(shareText).then(() => {
-    const toast = document.getElementById('share-toast');
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3000);
-  });
+document.getElementById('btn-share').addEventListener('click', async () => {
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: 'Commander Clutch — My Warzone Briefing',
+        text: shareText,
+        url: 'https://commanderclutch.vercel.app'
+      });
+    } catch(e) { console.log('Share cancelled'); }
+  } else {
+    navigator.clipboard.writeText(shareText).then(() => {
+      const toast = document.getElementById('share-toast');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    });
+  }
 });
-
 async function launchBriefing() {
   document.getElementById('questionnaire').style.display = 'none';
   document.getElementById('result-wrap').classList.add('show');
