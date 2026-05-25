@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Commander Clutch — Warzone AI Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#07080a;--bg2:#0e0f13;--bg3:#161820;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.14);
+  --accent:#7c6af7;--accent2:#5b4fd4;--accent-glow:rgba(124,106,247,0.25);
+  --text:#eeedf8;--text2:#8b8a99;--text3:#444356;
+  --green:#4ade80;--amber:#fbbf24;--red:#f87171;
+}
+html,body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;overflow-x:hidden;}
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;width:100%;height:100%;}
+
+/* INTRO */
+#intro{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:transparent;transition:opacity 0.6s ease,transform 0.6s ease;}
+#intro.out{opacity:0;transform:scale(1.04);pointer-events:none;}
+.intro-glow{position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(124,106,247,0.18) 0%,transparent 70%);pointer-events:none;animation:pulse-glow 3s ease-in-out infinite;}
+@keyframes pulse-glow{0%,100%{transform:scale(1);opacity:0.8;}50%{transform:scale(1.15);opacity:1;}}
+.intro-avatar{width:90px;height:90px;border-radius:50%;background:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:42px;margin-bottom:1.5rem;box-shadow:0 0 0 1px rgba(124,106,247,0.4),0 0 40px rgba(124,106,247,0.3);animation:avatar-in 0.8s cubic-bezier(0.34,1.56,0.64,1) both;}
+@keyframes avatar-in{from{transform:scale(0.5);opacity:0;}to{transform:scale(1);opacity:1;}}
+.intro-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(48px,10vw,80px);letter-spacing:0.06em;color:var(--text);line-height:1;text-align:center;animation:fade-up 0.6s 0.3s ease both;}
+.intro-sub{font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text3);margin-top:8px;animation:fade-up 0.6s 0.45s ease both;}
+.intro-typewriter{font-size:16px;color:var(--accent);font-style:italic;margin-top:2rem;min-height:24px;text-align:center;animation:fade-up 0.6s 0.6s ease both;}
+.intro-cta{margin-top:2.5rem;background:var(--accent2);border:none;border-radius:8px;padding:14px 40px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.12em;color:#fff;cursor:pointer;position:relative;overflow:hidden;transition:transform 0.15s,box-shadow 0.15s;animation:fade-up 0.6s 0.8s ease both;}
+.intro-cta::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent);transform:translateX(-100%);transition:transform 0.4s;}
+.intro-cta:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(124,106,247,0.4);}
+.intro-cta:hover::before{transform:translateX(100%);}
+.intro-badge{margin-top:1.5rem;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);border:0.5px solid var(--accent2);padding:4px 12px;border-radius:4px;background:rgba(124,106,247,0.08);animation:fade-up 0.6s 0.9s ease both;}
+@keyframes fade-up{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+
+/* APP */
+#app{position:relative;z-index:1;opacity:0;transition:opacity 0.5s ease;min-height:100vh;}
+#app.visible{opacity:1;}
+
+/* NAV */
+.nav-bar{position:sticky;top:0;z-index:50;background:rgba(7,8,10,0.85);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--border);padding:0 1.25rem;}
+.nav-inner{max-width:900px;margin:0 auto;display:flex;align-items:center;gap:0;}
+.nav-logo{display:flex;align-items:center;gap:10px;padding:12px 0;cursor:pointer;margin-right:2rem;flex-shrink:0;}
+.nav-logo-avatar{width:32px;height:32px;border-radius:50%;background:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 0 12px var(--accent-glow);}
+.nav-logo-name{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.06em;color:var(--text);}
+.nav-links{display:flex;gap:0;flex:1;overflow-x:auto;scrollbar-width:none;}
+.nav-links::-webkit-scrollbar{display:none;}
+.nav-link{padding:14px 14px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:color 0.15s,border-color 0.15s;}
+.nav-link:hover{color:var(--text2);}
+.nav-link.active{color:var(--accent);border-bottom-color:var(--accent);}
+.nav-badge{display:inline-block;font-size:9px;padding:1px 5px;border-radius:3px;background:var(--accent2);color:#fff;margin-left:5px;vertical-align:middle;}
+
+/* PAGES */
+.page{display:none;max-width:900px;margin:0 auto;padding:2rem 1.25rem 4rem;}
+.page.active{display:block;animation:fade-up 0.25s ease both;}
+
+/* PAGE HEADERS */
+.page-header{margin-bottom:2rem;}
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:0.06em;color:var(--text);line-height:1;}
+.page-sub{font-size:14px;color:var(--text2);margin-top:6px;font-style:italic;}
+
+/* CARDS */
+.card{background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;padding:1.25rem;margin-bottom:12px;transition:border-color 0.15s,box-shadow 0.15s;}
+.card:hover{border-color:var(--border2);box-shadow:0 4px 20px rgba(0,0,0,0.3);}
+.card-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.card-label::before{content:'';display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0;}
+.card-body{font-size:14px;color:var(--text);line-height:1.75;white-space:pre-wrap;}
+.card-body strong{color:var(--text);font-weight:600;}
+
+/* QUICK FORM */
+.qform{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:1.5rem;}
+.qopt{padding:10px 14px;border:0.5px solid var(--border);border-radius:8px;background:var(--bg2);cursor:pointer;font-size:13px;font-family:'Barlow',sans-serif;color:var(--text2);text-align:left;transition:all 0.15s;}
+.qopt:hover{border-color:var(--border2);background:var(--bg3);color:var(--text);transform:translateY(-1px);}
+.qopt.sel{border-color:var(--accent);background:rgba(124,106,247,0.1);color:var(--text);}
+.qopt-icon{font-size:16px;display:block;margin-bottom:4px;}
+.qopt-label{font-weight:600;display:block;font-size:12px;}
+
+/* AI RESULT */
+.ai-result{padding:1.25rem 1.5rem;background:var(--bg2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;margin-bottom:1rem;font-size:14px;color:var(--text);line-height:1.75;}
+.ai-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;display:block;}
+.ai-result strong{color:var(--text);font-weight:600;}
+.ai-result em{color:var(--text2);font-style:normal;}
+
+/* SPINNER */
+.spinner-wrap{text-align:center;padding:2.5rem 0;}
+.spinner{width:32px;height:32px;border:2px solid var(--bg3);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 1rem;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.spinner-label{font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text2);}
+
+/* TIER BADGES */
+.tier{display:inline-block;font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:0.08em;padding:2px 7px;border-radius:4px;margin-left:6px;}
+.tier-s{background:rgba(251,191,36,0.15);color:var(--amber);border:0.5px solid rgba(251,191,36,0.3);}
+.tier-a{background:rgba(124,106,247,0.15);color:var(--accent);border:0.5px solid rgba(124,106,247,0.3);}
+.tier-b{background:rgba(74,222,128,0.1);color:var(--green);border:0.5px solid rgba(74,222,128,0.2);}
+.tier-c{background:rgba(248,113,113,0.1);color:var(--red);border:0.5px solid rgba(248,113,113,0.2);}
+
+/* LOADOUT LIBRARY GRID */
+.loadout-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:1.5rem;}
+.loadout-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;padding:1.25rem;transition:all 0.15s;cursor:pointer;}
+.loadout-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 24px rgba(124,106,247,0.15);}
+.loadout-card-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.05em;color:var(--text);margin-bottom:4px;}
+.loadout-card-sub{font-size:11px;color:var(--text3);font-family:'Barlow Condensed',sans-serif;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:12px;}
+.loadout-card-body{font-size:12px;color:var(--text2);line-height:1.8;}
+.loadout-expand{display:none;margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border);font-size:13px;color:var(--text);line-height:1.75;white-space:pre-wrap;}
+.loadout-card.open .loadout-expand{display:block;}
+
+/* STREAM TOOLKIT */
+.toolkit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:1.5rem;}
+.toolkit-btn{padding:14px;border:0.5px solid var(--border);border-radius:8px;background:var(--bg2);cursor:pointer;text-align:left;transition:all 0.15s;}
+.toolkit-btn:hover{border-color:var(--accent);background:rgba(124,106,247,0.06);transform:translateY(-1px);}
+.toolkit-btn.active-tool{border-color:var(--accent);background:rgba(124,106,247,0.1);}
+.toolkit-icon{font-size:22px;margin-bottom:6px;display:block;}
+.toolkit-name{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text);}
+.toolkit-desc{font-size:11px;color:var(--text3);margin-top:2px;}
+
+/* META WATCH */
+.meta-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-top:1.5rem;}
+.meta-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;padding:1.25rem;}
+.meta-rank{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:0.1em;color:var(--text3);margin-bottom:4px;}
+.meta-weapon{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.04em;color:var(--text);}
+.meta-reason{font-size:12px;color:var(--text2);margin-top:6px;line-height:1.6;}
+
+/* ACTION BUTTON */
+.act-btn{background:var(--accent2);border:none;border-radius:8px;padding:12px 28px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#fff;cursor:pointer;transition:all 0.15s;margin-top:1rem;}
+.act-btn:hover{background:var(--accent);transform:translateY(-1px);box-shadow:0 6px 20px rgba(124,106,247,0.35);}
+.act-btn:disabled{opacity:0.4;pointer-events:none;}
+.act-btn.sec{background:none;border:0.5px solid var(--border);color:var(--text2);margin-left:8px;}
+.act-btn.sec:hover{border-color:var(--border2);color:var(--text);transform:translateY(-1px);box-shadow:none;}
+
+/* FOOTER */
+.page-footer{margin-top:3rem;padding-top:1.5rem;border-top:0.5px solid var(--border);text-align:center;font-size:11px;color:var(--text3);font-family:'Barlow Condensed',sans-serif;letter-spacing:0.05em;}
+
+/* SHARE */
+.share-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:1rem;}
+.btn-platform{display:flex;align-items:center;gap:7px;padding:9px 16px;border-radius:6px;border:0.5px solid var(--border);background:var(--bg2);color:var(--text2);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.05em;cursor:pointer;transition:all 0.15s;}
+.btn-platform:hover{border-color:var(--border2);background:var(--bg3);color:var(--text);transform:translateY(-1px);}
+.btn-platform.x:hover{background:#000;color:#fff;border-color:rgba(255,255,255,0.3);}
+.btn-platform.whatsapp:hover{background:#25D366;color:#fff;border-color:#25D366;}
+.btn-platform.instagram:hover{background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:#fff;border-color:#cc2366;}
+.btn-platform.messages:hover{background:#34C759;color:#fff;border-color:#34C759;}
+.btn-platform.copy-btn:hover{background:var(--accent2);color:#fff;border-color:var(--accent);}
+.btn-platform svg{width:15px;height:15px;flex-shrink:0;}
+.share-toast{display:none;margin-top:8px;font-size:13px;color:var(--green);font-family:'Barlow Condensed',sans-serif;letter-spacing:0.04em;}
+.share-toast.show{display:block;}
+
+/* QUESTIONNAIRE (briefing page) */
+.progress-wrap{margin-bottom:2rem;}
+.progress-bar{display:flex;gap:4px;margin-bottom:8px;}
+.pip{height:3px;flex:1;border-radius:2px;background:var(--bg3);transition:background 0.4s;}
+.pip.done{background:var(--accent2);}
+.pip.active{background:var(--accent);}
+.progress-label{font-size:11px;color:var(--text3);font-family:'Barlow Condensed',sans-serif;letter-spacing:0.06em;text-transform:uppercase;}
+.step{display:none;}
+.step.active{display:block;animation:step-in 0.25s ease both;}
+@keyframes step-in{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+.q-label{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.04em;color:var(--text);margin-bottom:4px;line-height:1.1;}
+.q-sub{font-size:13px;color:var(--text2);margin-bottom:1.5rem;font-style:italic;}
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:2rem;}
+.opt{padding:12px 14px;border:0.5px solid var(--border);border-radius:8px;background:var(--bg2);cursor:pointer;font-size:13px;font-family:'Barlow',sans-serif;color:var(--text2);text-align:left;transition:all 0.15s;line-height:1.4;}
+.opt:hover{border-color:var(--border2);background:var(--bg3);color:var(--text);transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,0.3);}
+.opt.selected{border-color:var(--accent);background:rgba(124,106,247,0.1);color:var(--text);box-shadow:0 0 0 1px rgba(124,106,247,0.2),0 4px 20px rgba(124,106,247,0.15);transform:translateY(-1px);}
+.opt-icon{font-size:18px;display:block;margin-bottom:6px;}
+.opt-label{font-weight:600;display:block;}
+.opt-desc{font-size:11px;color:var(--text3);margin-top:2px;display:block;}
+.bnav{display:flex;justify-content:space-between;align-items:center;}
+.btn-back{background:none;border:0.5px solid var(--border);border-radius:6px;padding:10px 20px;font-size:13px;font-family:'Barlow',sans-serif;color:var(--text2);cursor:pointer;transition:all 0.15s;}
+.btn-back:hover{border-color:var(--border2);color:var(--text);}
+.btn-next{background:var(--accent2);border:none;border-radius:6px;padding:11px 28px;font-size:14px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#fff;cursor:pointer;opacity:0.35;pointer-events:none;transition:all 0.15s;}
+.btn-next.ready{opacity:1;pointer-events:all;}
+.btn-next.ready:hover{background:var(--accent);transform:translateY(-1px);box-shadow:0 6px 20px rgba(124,106,247,0.35);}
+.result-wrap{display:none;}
+.result-wrap.show{display:block;}
+.debrief-header{text-align:center;padding:1.5rem 0 1rem;animation:debrief-in 0.5s ease both;}
+@keyframes debrief-in{from{opacity:0;transform:scale(0.95);}to{opacity:1;transform:scale(1);}}
+.debrief-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:0.1em;color:var(--green);text-shadow:0 0 20px rgba(74,222,128,0.4);}
+.debrief-sub{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text3);margin-top:4px;}
+.tags{margin-bottom:1.25rem;display:flex;flex-wrap:wrap;gap:6px;}
+.tag{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:3px 10px;border-radius:4px;background:rgba(124,106,247,0.1);color:var(--accent);border:0.5px solid rgba(124,106,247,0.25);}
+.clutch-msg{padding:1.25rem 1.5rem;background:var(--bg2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;margin-bottom:1.25rem;font-size:15px;color:var(--text);line-height:1.65;box-shadow:inset 0 0 0 0.5px var(--border);}
+.clutch-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;display:block;}
+.result-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;padding:1.25rem;margin-bottom:10px;transition:all 0.15s;animation:card-in 0.4s ease both;}
+.result-card:nth-child(2){animation-delay:0.05s}.result-card:nth-child(3){animation-delay:0.1s}.result-card:nth-child(4){animation-delay:0.15s}.result-card:nth-child(5){animation-delay:0.2s}.result-card:nth-child(6){animation-delay:0.25s}
+@keyframes card-in{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.result-card:hover{border-color:var(--border2);box-shadow:0 4px 20px rgba(0,0,0,0.3);}
+.card-title-row{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.card-title-row::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;}
+.result-body{font-size:14px;color:var(--text);line-height:1.75;white-space:pre-wrap;}
+.result-body strong{color:var(--text);font-weight:600;}
+.result-actions{margin-top:1.5rem;}
+.share-section-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;}
+.btn-restart{background:none;border:0.5px solid var(--border);border-radius:6px;padding:10px 20px;font-size:13px;font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text2);cursor:pointer;margin-top:8px;transition:all 0.15s;}
+.btn-restart:hover{border-color:var(--border2);color:var(--text);}
+
+/* SHARE CARD */
+.share-card{position:fixed;left:-9999px;top:0;width:420px;background:#07080a;padding:36px;font-family:'Barlow',sans-serif;border:1px solid rgba(124,106,247,0.3);}
+.sc-top{display:flex;align-items:center;gap:12px;margin-bottom:22px;padding-bottom:18px;border-bottom:0.5px solid rgba(255,255,255,0.08);}
+.sc-avatar{width:42px;height:42px;border-radius:50%;background:#5b4fd4;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.sc-name{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.05em;color:#eeedf8;line-height:1;}
+.sc-sub{font-size:10px;color:#8b8a99;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.08em;text-transform:uppercase;margin-top:3px;}
+.sc-badge{margin-left:auto;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#7c6af7;border:0.5px solid #5b4fd4;padding:3px 8px;border-radius:4px;background:rgba(124,106,247,0.08);white-space:nowrap;}
+.sc-assessment{font-size:14px;color:#eeedf8;line-height:1.65;margin-bottom:18px;padding:14px 18px;background:#0e0f13;border-left:3px solid #7c6af7;border-radius:0 6px 6px 0;}
+.sc-section-label{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#444356;margin-bottom:8px;display:flex;align-items:center;gap:5px;}
+.sc-section-label::before{content:'';display:inline-block;width:5px;height:5px;border-radius:50%;background:#7c6af7;}
+.sc-tier{display:inline-block;font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:0.08em;padding:1px 6px;border-radius:3px;background:rgba(251,191,36,0.15);color:#fbbf24;border:0.5px solid rgba(251,191,36,0.3);margin-left:6px;}
+.sc-weapon{font-size:17px;font-weight:600;color:#eeedf8;margin-bottom:5px;}
+.sc-attachments{font-size:12px;color:#8b8a99;line-height:1.8;}
+.sc-verdict{margin-top:18px;padding-top:14px;border-top:0.5px solid rgba(255,255,255,0.08);font-size:13px;color:#8b8a99;font-style:italic;line-height:1.5;}
+.sc-url{margin-top:14px;font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#7c6af7;}
+
+@media(max-width:600px){
+  .opts{grid-template-columns:1fr 1fr;}
+  .q-label{font-size:22px;}
+  .nav-logo-name{display:none;}
+  .nav-link{padding:14px 10px;font-size:11px;}
+  .loadout-grid,.meta-grid,.toolkit-grid{grid-template-columns:1fr;}
+  .intro-title{font-size:52px;}
+}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+
+<!-- INTRO -->
+<div id="intro">
+  <div class="intro-glow"></div>
+  <div class="intro-avatar">🎖️</div>
+  <div class="intro-title">Commander Clutch</div>
+  <div class="intro-sub">Warzone AI Platform · Season 3 Reloaded</div>
+  <div class="intro-typewriter" id="typewriter"></div>
+  <button class="intro-cta" id="btn-start">Enter HQ</button>
+  <div class="intro-badge">Free · 5 Tools · Live Meta Data</div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- NAV -->
+  <nav class="nav-bar">
+    <div class="nav-inner">
+      <div class="nav-logo" onclick="location.reload()">
+        <div class="nav-logo-avatar">🎖️</div>
+        <div class="nav-logo-name">Commander Clutch</div>
+      </div>
+      <div class="nav-links">
+        <div class="nav-link active" data-page="briefing">🎯 Briefing</div>
+        <div class="nav-link" data-page="drop">🗺️ Drop Spots</div>
+        <div class="nav-link" data-page="meta">📊 Meta Watch</div>
+        <div class="nav-link" data-page="gulag">💀 Gulag Coach</div>
+        <div class="nav-link" data-page="loadouts">🔫 Loadouts</div>
+        <div class="nav-link" data-page="stream">📺 Stream Kit</div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- PAGE: BRIEFING -->
+  <div class="page active" id="page-briefing">
+    <div class="progress-wrap" style="margin-top:1.5rem;">
+      <div class="progress-bar" id="progress"></div>
+      <div class="progress-label" id="progress-label">Step 1 of 7</div>
+    </div>
+    <div id="questionnaire">
+      <div class="step active" data-step="0">
+        <div class="q-label">What mode are you running?</div>
+        <div class="q-sub">Don't lie to me, Operator.</div>
+        <div class="opts" id="mode-opts">
+          <div style="grid-column:1/-1;text-align:center;padding:1.5rem 0;color:var(--text3);font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;">
+            <div class="spinner" style="margin:0 auto 10px;width:20px;height:20px;border-width:1.5px;"></div>
+            Loading live playlist...
+          </div>
+        </div>
+      </div>
+      <div class="step" data-step="1">
+        <div class="q-label">Which map are you dropping on?</div>
+        <div class="q-sub">Your loadout lives and dies by terrain.</div>
+        <div class="opts" id="map-opts">
+          <div style="grid-column:1/-1;text-align:center;padding:1rem 0;color:var(--text3);font-size:12px;">Loading maps...</div>
+        </div>
+      </div>
+      <div class="step" data-step="2">
+        <div class="q-label">What's your playstyle?</div>
+        <div class="q-sub">Be honest. I already know the answer.</div>
+        <div class="opts">
+          <button class="opt" data-val="Aggressive Rusher who pushes everything and rotates fast"><span class="opt-icon">⚡</span><span class="opt-label">Aggressive Rusher</span><span class="opt-desc">Push everything</span></button>
+          <button class="opt" data-val="Tactical Slayer with calculated aggression and good positioning"><span class="opt-icon">🎯</span><span class="opt-label">Tactical Slayer</span><span class="opt-desc">Pick your fights</span></button>
+          <button class="opt" data-val="Long Range Sniper who holds angles and punishes rotations"><span class="opt-icon">🔭</span><span class="opt-label">Long Range Sniper</span><span class="opt-desc">Hold angles</span></button>
+          <button class="opt" data-val="Support Player who tracks enemies and keeps the team alive"><span class="opt-icon">🛡️</span><span class="opt-label">Support Player</span><span class="opt-desc">Keep team alive</span></button>
+          <button class="opt" data-val="Passive Survivalist who rotates early and plays for placement"><span class="opt-icon">🐢</span><span class="opt-label">Passive Survivalist</span><span class="opt-desc">Play for placement</span></button>
+        </div>
+      </div>
+      <div class="step" data-step="3">
+        <div class="q-label">Biggest weakness right now?</div>
+        <div class="q-sub">This is a safe space, Operator. Mostly.</div>
+        <div class="opts">
+          <button class="opt" data-val="losing close-range gunfights"><span class="opt-icon">🥊</span><span class="opt-label">Close-range gunfights</span></button>
+          <button class="opt" data-val="getting beamed at long range with no way to respond"><span class="opt-icon">😵</span><span class="opt-label">Getting beamed long range</span></button>
+          <button class="opt" data-val="terrible late-game positioning — always dying top 10"><span class="opt-icon">🗺️</span><span class="opt-label">Late-game positioning</span></button>
+          <button class="opt" data-val="overextending and rushing in alone without backup"><span class="opt-icon">🏃</span><span class="opt-label">Overextending solo</span></button>
+          <button class="opt" data-val="panicking under pressure and missing shots I should hit"><span class="opt-icon">😰</span><span class="opt-label">Panicking under pressure</span></button>
+          <button class="opt" data-val="inconsistent loadout — not sure what actually works"><span class="opt-icon">🔧</span><span class="opt-label">Inconsistent loadout</span></button>
+        </div>
+      </div>
+      <div class="step" data-step="4">
+        <div class="q-label">Preferred weapon class?</div>
+        <div class="q-sub">Your comfort zone. We'll expand it later.</div>
+        <div class="opts">
+          <button class="opt" data-val="Assault Rifles"><span class="opt-icon">🔫</span><span class="opt-label">Assault Rifles</span><span class="opt-desc">Versatile, mid-long range</span></button>
+          <button class="opt" data-val="SMGs"><span class="opt-icon">⚡</span><span class="opt-label">SMGs</span><span class="opt-desc">Fast TTK, high mobility</span></button>
+          <button class="opt" data-val="LMGs"><span class="opt-icon">💣</span><span class="opt-label">LMGs</span><span class="opt-desc">Big mag, hold angles</span></button>
+          <button class="opt" data-val="Sniper Rifles"><span class="opt-icon">🔭</span><span class="opt-label">Sniper Rifles</span><span class="opt-desc">One shot, one kill</span></button>
+          <button class="opt" data-val="whatever is currently meta — just tell me what to run"><span class="opt-icon">❓</span><span class="opt-label">Just meta please</span><span class="opt-desc">I trust you, Clutch</span></button>
+        </div>
+      </div>
+      <div class="step" data-step="5">
+        <div class="q-label">Honest skill level?</div>
+        <div class="q-sub">No ego. Just data.</div>
+        <div class="opts">
+          <button class="opt" data-val="Beginner — still learning basics, dies constantly"><span class="opt-icon">🌱</span><span class="opt-label">Beginner</span><span class="opt-desc">Learning the ropes</span></button>
+          <button class="opt" data-val="Casual — holds their own but rarely carries"><span class="opt-icon">🙂</span><span class="opt-label">Casual</span><span class="opt-desc">Positive vibes only</span></button>
+          <button class="opt" data-val="Intermediate — positive KD, occasional wins, wants to level up"><span class="opt-icon">📈</span><span class="opt-label">Intermediate</span><span class="opt-desc">Ready to grind</span></button>
+          <button class="opt" data-val="Advanced — high KD, consistent wins, wants the sweatiest meta setup"><span class="opt-icon">🔥</span><span class="opt-label">Advanced</span><span class="opt-desc">Full sweat mode</span></button>
+        </div>
+      </div>
+      <div class="step" data-step="6">
+        <div class="q-label">Mission objective today?</div>
+        <div class="q-sub">Choose your mission, Operator.</div>
+        <div class="opts">
+          <button class="opt" data-val="more kills and a better KD ratio"><span class="opt-icon">💀</span><span class="opt-label">More kills / KD</span></button>
+          <button class="opt" data-val="winning more games and better placement"><span class="opt-icon">🏆</span><span class="opt-label">Win more games</span></button>
+          <button class="opt" data-val="growing my Twitch or YouTube stream with content-worthy highlight plays"><span class="opt-icon">📺</span><span class="opt-label">Grow my stream</span></button>
+          <button class="opt" data-val="everything — become a complete player and content creator"><span class="opt-icon">⭐</span><span class="opt-label">All of the above</span></button>
+        </div>
+      </div>
+      <div class="bnav">
+        <button class="btn-back" id="btn-back" style="visibility:hidden">← Back</button>
+        <button class="btn-next" id="btn-next">Next →</button>
+      </div>
+    </div>
+    <div class="result-wrap" id="result-wrap">
+      <div id="result-content"></div>
+      <div class="result-actions">
+        <div class="share-section-label">Share your briefing</div>
+        <div class="share-row" id="brief-share-row">
+          <button class="btn-platform x" id="btn-x"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>Post on X</button>
+          <button class="btn-platform instagram" id="btn-instagram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>Instagram</button>
+          <button class="btn-platform whatsapp" id="btn-whatsapp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>WhatsApp</button>
+          <button class="btn-platform messages" id="btn-messages"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.96 9.96 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a8 8 0 01-4.438-1.338l-.32-.19-3.32.987.987-3.32-.19-.32A8 8 0 1112 20z"/></svg>iMessage</button>
+          <button class="btn-platform copy-btn" id="btn-copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</button>
+        </div>
+        <button class="btn-restart" id="btn-restart">↺ New briefing</button>
+      </div>
+      <div class="share-toast" id="share-toast">Copied! Go flex on 'em. 🎖️</div>
+    </div>
+    <div class="page-footer">Commander Clutch · Not affiliated with Activision</div>
+  </div>
+
+  <!-- PAGE: DROP SPOTS -->
+  <div class="page" id="page-drop">
+    <div class="page-header" style="margin-top:1.5rem;">
+      <div class="page-title">🗺️ Drop Spot Finder</div>
+      <div class="page-sub">Tell Clutch your setup. He'll tell you exactly where to land — and why.</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:1rem;">
+      <div style="grid-column:1/-1;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:4px;">Map</div>
+      <div id="drop-map-opts" style="grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;">
+        <div style="color:var(--text3);font-size:12px;padding:8px 0;">Loading maps...</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:1rem;">
+      <div style="grid-column:1/-1;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:4px;">Playstyle</div>
+      <button class="qopt" data-group="drop-style" data-val="Aggressive — I want action immediately"><span class="qopt-icon">⚡</span><span class="qopt-label">Aggressive</span></button>
+      <button class="qopt" data-group="drop-style" data-val="Tactical — I want good loot and safe early game"><span class="qopt-icon">🎯</span><span class="qopt-label">Tactical</span></button>
+      <button class="qopt" data-group="drop-style" data-val="Passive — I want to avoid early fights and rotate late"><span class="qopt-icon">🐢</span><span class="qopt-label">Passive</span></button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:1.5rem;">
+      <div style="grid-column:1/-1;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:4px;">Squad Size</div>
+      <div id="drop-squad-opts" style="grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;">
+        <div style="color:var(--text3);font-size:12px;padding:8px 0;">Loading...</div>
+      </div>
+    </div>
+    <button class="act-btn" id="drop-btn" disabled>Find My Drop →</button>
+    <div id="drop-result" style="margin-top:1.5rem;"></div>
+    <div class="page-footer">Commander Clutch · Not affiliated with Activision</div>
+  </div>
+
+  <!-- PAGE: META WATCH -->
+  <div class="page" id="page-meta">
+    <div class="page-header" style="margin-top:1.5rem;">
+      <div class="page-title">📊 Meta Watch</div>
+      <div class="page-sub">What's broken, what's slept on, what got nerfed. Clutch has the current read.</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:1.5rem;">
+      <div id="meta-map-opts" style="grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;">
+        <div style="color:var(--text3);font-size:12px;padding:8px 0;">Loading maps...</div>
+      </div>
+    </div>
+    <button class="act-btn" id="meta-btn" disabled>Get Meta Report →</button>
+    <div id="meta-result" style="margin-top:1.5rem;"></div>
+    <div class="page-footer">Commander Clutch · Not affiliated with Activision</div>
+  </div>
+
+  <!-- PAGE: GULAG COACH -->
+  <div class="page" id="page-gulag">
+    <div class="page-header" style="margin-top:1.5rem;">
+      <div class="page-title">💀 Gulag Coach</div>
+      <div class="page-sub">You're in the gulag. 30 seconds. Clutch will get you back in the fight.</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:1rem;">
+      <div style="grid-column:1/-1;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:4px;">Weapon you got</div>
+      <button class="qopt" data-group="gulag-weapon" data-val="SMG"><span class="qopt-icon">⚡</span><span class="qopt-label">SMG</span></button>
+      <button class="qopt" data-group="gulag-weapon" data-val="Assault Rifle"><span class="qopt-icon">🔫</span><span class="qopt-label">Assault Rifle</span></button>
+      <button class="qopt" data-group="gulag-weapon" data-val="Shotgun"><span class="qopt-icon">💥</span><span class="qopt-label">Shotgun</span></button>
+      <button class="qopt" data-group="gulag-weapon" data-val="Sniper"><span class="qopt-icon">🔭</span><span class="qopt-label">Sniper</span></button>
+      <button class="qopt" data-group="gulag-weapon" data-val="Pistol"><span class="qopt-icon">🔘</span><span class="qopt-label">Pistol</span></button>
+      <button class="qopt" data-group="gulag-weapon" data-val="LMG"><span class="qopt-icon">💣</span><span class="qopt-label">LMG</span></button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:1rem;">
+      <div style="grid-column:1/-1;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:4px;">How did you die?</div>
+      <button class="qopt" data-group="gulag-death" data-val="I got rushed and couldn't react"><span class="qopt-icon">🏃</span><span class="qopt-label">Got rushed</span></button>
+      <button class="qopt" data-group="gulag-death" data-val="I got beamed from distance"><span class="qopt-icon">😵</span><span class="qopt-label">Got beamed</span></button>
+      <button class="qopt" data-group="gulag-death" data-val="I panicked and missed shots"><span class="qopt-icon">😰</span><span class="qopt-label">Panicked</span></button>
+      <button class="qopt" data-group="gulag-death" data-val="Got third partied unexpectedly"><span class="qopt-icon">🎲</span><span class="qopt-label">Third partied</span></button>
+      <button class="qopt" data-group="gulag-death" data-val="Made a bad rotation choice"><span class="qopt-icon">🗺️</span><span class="qopt-label">Bad rotation</span></button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:1.5rem;">
+      <div style="grid-column:1/-1;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:4px;">Your gulag approach</div>
+      <button class="qopt" data-group="gulag-approach" data-val="I rush immediately"><span class="qopt-icon">⚡</span><span class="qopt-label">Rush immediately</span></button>
+      <button class="qopt" data-group="gulag-approach" data-val="I hold and wait for them to push"><span class="qopt-icon">🛡️</span><span class="qopt-label">Hold and wait</span></button>
+      <button class="qopt" data-group="gulag-approach" data-val="I try to use throwables first"><span class="qopt-icon">💣</span><span class="qopt-label">Throwables first</span></button>
+      <button class="qopt" data-group="gulag-approach" data-val="I have no strategy, I just wing it"><span class="qopt-icon">🎲</span><span class="qopt-label">No strategy</span></button>
+    </div>
+    <button class="act-btn" id="gulag-btn" disabled>Get Gulag Strategy →</button>
+    <div id="gulag-result" style="margin-top:1.5rem;"></div>
+    <div class="page-footer">Commander Clutch · Not affiliated with Activision</div>
+  </div>
+
+  <!-- PAGE: LOADOUT LIBRARY -->
+  <div class="page" id="page-loadouts">
+    <div class="page-header" style="margin-top:1.5rem;">
+      <div class="page-title">🔫 Loadout Library</div>
+      <div class="page-sub">Current meta builds. Browse by playstyle. Copy and drop in.</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:1.5rem;">
+      <button class="qopt" data-group="lib-style" data-val="Aggressive Rusher — fast TTK close range meta"><span class="qopt-icon">⚡</span><span class="qopt-label">Aggressive</span></button>
+      <button class="qopt" data-group="lib-style" data-val="Tactical Slayer — versatile mid-range dominance"><span class="qopt-icon">🎯</span><span class="qopt-label">Tactical</span></button>
+      <button class="qopt" data-group="lib-style" data-val="Long Range Sniper — one-shot kills and angle holding"><span class="qopt-icon">🔭</span><span class="qopt-label">Sniper</span></button>
+      <button class="qopt" data-group="lib-style" data-val="Support — high ammo capacity team play"><span class="qopt-icon">🛡️</span><span class="qopt-label">Support</span></button>
+      <button class="qopt" data-group="lib-style" data-val="Passive Survivalist — low recoil safe loadout"><span class="qopt-icon">🐢</span><span class="qopt-label">Passive</span></button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:1.5rem;">
+      <div style="grid-column:1/-1;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:4px;">Map (optional)</div>
+      <div id="lib-map-opts" style="grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;">
+        <div style="color:var(--text3);font-size:12px;padding:8px 0;">Loading maps...</div>
+      </div>
+    </div>
+    <button class="act-btn" id="lib-btn" disabled>Generate Loadouts →</button>
+    <div id="lib-result" style="margin-top:1.5rem;"></div>
+    <div class="page-footer">Commander Clutch · Not affiliated with Activision</div>
+  </div>
+
+  <!-- PAGE: STREAM TOOLKIT -->
+  <div class="page" id="page-stream">
+    <div class="page-header" style="margin-top:1.5rem;">
+      <div class="page-title">📺 Stream Toolkit</div>
+      <div class="page-sub">Everything a Warzone content creator needs. Pick a tool, Clutch delivers.</div>
+    </div>
+    <div class="toolkit-grid">
+      <button class="toolkit-btn" data-tool="title"><span class="toolkit-icon">📝</span><span class="toolkit-name">Stream Title Generator</span><span class="toolkit-desc">Clickable titles for your session</span></button>
+      <button class="toolkit-btn" data-tool="overlay"><span class="toolkit-icon">🖥️</span><span class="toolkit-name">Overlay Suggestions</span><span class="toolkit-desc">Layout & widget ideas for your stream</span></button>
+      <button class="toolkit-btn" data-tool="thumbnail"><span class="toolkit-icon">🎨</span><span class="toolkit-name">Thumbnail Concepts</span><span class="toolkit-desc">YouTube thumbnail ideas that get clicks</span></button>
+      <button class="toolkit-btn" data-tool="hooks"><span class="toolkit-icon">🎣</span><span class="toolkit-name">Content Hook Ideas</span><span class="toolkit-desc">Opening lines that keep viewers watching</span></button>
+      <button class="toolkit-btn" data-tool="bio"><span class="toolkit-icon">👤</span><span class="toolkit-name">Channel Bio Writer</span><span class="toolkit-desc">Twitch/YouTube bio that converts</span></button>
+      <button class="toolkit-btn" data-tool="schedule"><span class="toolkit-icon">📅</span><span class="toolkit-name">Content Schedule</span><span class="toolkit-desc">Weekly posting plan for growth</span></button>
+    </div>
+    <div id="stream-tool-inputs" style="display:none;margin-bottom:1.5rem;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;" id="stream-context-label">Tell Clutch about your stream</div>
+      <textarea id="stream-input" placeholder="e.g. I'm a casual Warzone streamer, mostly play solos, I have 50 followers, I post twice a week..." style="width:100%;background:var(--bg2);border:0.5px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;resize:vertical;min-height:80px;outline:none;transition:border-color 0.15s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+    </div>
+    <button class="act-btn" id="stream-btn" style="display:none;">Generate →</button>
+    <div id="stream-result" style="margin-top:1.5rem;"></div>
+    <div class="page-footer">Commander Clutch · Not affiliated with Activision</div>
+  </div>
+</div>
+
+<!-- SHARE CARD -->
+<div class="share-card" id="share-card">
+  <div class="sc-top"><div class="sc-avatar">🎖️</div><div><div class="sc-name">Commander Clutch</div><div class="sc-sub">Warzone AI Coach</div></div><div class="sc-badge">Season 3 Reloaded</div></div>
+  <div class="sc-assessment" id="sc-assessment"></div>
+  <div class="sc-section-label">Primary Loadout <span class="sc-tier">S TIER</span></div>
+  <div class="sc-weapon" id="sc-weapon"></div>
+  <div class="sc-attachments" id="sc-attachments"></div>
+  <div class="sc-verdict" id="sc-verdict"></div>
+  <div class="sc-url">commanderclutch.vercel.app</div>
+</div>
+
+<script>
+// ── WEBGL SMOKE ──
+(function(){
+  const cv=document.getElementById('bg-canvas');
+  const gl=cv.getContext('webgl')||cv.getContext('experimental-webgl');
+  if(!gl){cv.style.display='none';return;}
+  function resize(){cv.width=window.innerWidth;cv.height=window.innerHeight;gl.viewport(0,0,cv.width,cv.height);}
+  resize();window.addEventListener('resize',resize);
+  const vs=`attribute vec2 p;void main(){gl_Position=vec4(p,0,1);}`;
+  const fs=`precision highp float;uniform float T;uniform vec2 R;uniform vec2 M;
+vec2 h2(vec2 p){p=vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3)));return -1.0+2.0*fract(sin(p)*43758.5453);}
+float n(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.0-2.0*f);return mix(mix(dot(h2(i),f),dot(h2(i+vec2(1,0)),f-vec2(1,0)),u.x),mix(dot(h2(i+vec2(0,1)),f-vec2(0,1)),dot(h2(i+vec2(1,1)),f-vec2(1,1)),u.x),u.y);}
+float fbm(vec2 p){float v=0.0,a=0.5;mat2 r=mat2(.8,.6,-.6,.8);for(int i=0;i<8;i++){v+=a*n(p);p=r*p*2.1+vec2(100);a*=.5;}return v;}
+void main(){
+  vec2 uv=gl_FragCoord.xy/R;vec2 p=(uv*2.0-1.0)*vec2(R.x/R.y,1.0);float t=T*0.15;
+  vec2 mp=(M/R*2.0-1.0)*vec2(R.x/R.y,1.0);float md=length(p-mp);vec2 mf=normalize(p-mp+0.001)*smoothstep(0.6,0.0,md)*0.25;
+  vec2 q=vec2(fbm(p+t*0.4),fbm(p+vec2(5.2,1.3)+t*0.35));
+  vec2 r2=vec2(fbm(p+3.5*q+vec2(1.7,9.2)+t*0.25+mf),fbm(p+3.5*q+vec2(8.3,2.8)+t*0.22+mf));
+  vec2 s=vec2(fbm(p+2.8*r2+vec2(4.1,3.7)+t*0.18),fbm(p+2.8*r2+vec2(7.2,5.1)+t*0.15));
+  float f=fbm(p+3.0*s+t*0.12);float smoke=clamp(f*f*2.5+0.05,0.0,1.0);
+  float rise=smoothstep(1.2,-0.5,uv.y)*0.5;smoke=clamp(smoke*(0.5+rise),0.0,1.0);
+  vec3 c0=vec3(0.01,0.01,0.04),c1=vec3(0.05,0.03,0.15),c2=vec3(0.12,0.06,0.32),c3=vec3(0.28,0.12,0.62),c4=vec3(0.50,0.22,0.90),c5=vec3(0.70,0.40,1.00),blue=vec3(0.05,0.20,0.55),cyan=vec3(0.00,0.35,0.60);
+  vec3 col=c0;col=mix(col,c1,smoothstep(0.00,0.20,smoke));col=mix(col,c2,smoothstep(0.15,0.38,smoke));col=mix(col,c3,smoothstep(0.32,0.58,smoke));col=mix(col,c4,smoothstep(0.52,0.76,smoke));col=mix(col,c5,smoothstep(0.72,0.95,smoke));
+  float bv=fbm(p*2.0+vec2(11.3,4.7)+t*0.28);col=mix(col,blue,bv*bv*0.45*smoke);
+  float cv2=fbm(p*1.4+vec2(3.8,8.2)+t*0.32);col=mix(col,cyan,cv2*cv2*0.25*smoke*0.8);
+  col+=vec3(0.4,0.1,1.0)*pow(max(0.0,fbm(p*3.0+t*0.4)),4.0)*smoke*1.2;
+  col+=vec3(0.0,0.3,0.8)*pow(max(0.0,cv2),3.0)*smoke*0.6;
+  float scan=sin(uv.y*600.0+T*3.0)*sin(uv.y*137.0-T*1.5)*0.018;col+=scan*smoke*vec3(0.5,0.2,1.0);
+  float bolt=pow(abs(n(vec2(uv.y*8.0+T*2.0,T*0.7))),6.0)*0.4;col+=vec3(0.3,0.1,0.9)*bolt*smoothstep(0.3,0.6,smoke);
+  float vig=1.0-dot((uv-0.5)*1.6,(uv-0.5)*1.6);col*=clamp(vig,0.0,1.0);
+  col=col/(col+0.3)*1.4;col=pow(clamp(col,0.0,1.0),vec3(0.82));
+  gl_FragColor=vec4(col,1.0);
+}`;
+  function mk(t,s){const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);return sh;}
+  const prog=gl.createProgram();gl.attachShader(prog,mk(gl.VERTEX_SHADER,vs));gl.attachShader(prog,mk(gl.FRAGMENT_SHADER,fs));gl.linkProgram(prog);gl.useProgram(prog);
+  const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+  const ap=gl.getAttribLocation(prog,'p');gl.enableVertexAttribArray(ap);gl.vertexAttribPointer(ap,2,gl.FLOAT,false,0,0);
+  const uT=gl.getUniformLocation(prog,'T'),uR=gl.getUniformLocation(prog,'R'),uM=gl.getUniformLocation(prog,'M');
+  let mx=window.innerWidth/2,my=window.innerHeight/2;
+  window.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+  window.addEventListener('touchmove',e=>{mx=e.touches[0].clientX;my=e.touches[0].clientY;},{passive:true});
+  const t0=performance.now();
+  function draw(){const t=(performance.now()-t0)/1000;gl.uniform1f(uT,t);gl.uniform2f(uR,cv.width,cv.height);gl.uniform2f(uM,mx,cv.height-my);gl.drawArrays(gl.TRIANGLE_STRIP,0,4);requestAnimationFrame(draw);}
+  draw();
+})();
+
+// ── SOUNDS ──
+const AudioCtx=window.AudioContext||window.webkitAudioContext;let audioCtx;
+function getAudio(){if(!audioCtx)audioCtx=new AudioCtx();return audioCtx;}
+function playClick(){try{const c=getAudio(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.setValueAtTime(800,c.currentTime);o.frequency.exponentialRampToValueAtTime(400,c.currentTime+0.08);g.gain.setValueAtTime(0.12,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.08);o.start();o.stop(c.currentTime+0.08);}catch(e){}}
+function playSelect(){try{const c=getAudio(),o=c.createOscillator(),g=c.createGain();o.type='sine';o.connect(g);g.connect(c.destination);o.frequency.setValueAtTime(440,c.currentTime);o.frequency.exponentialRampToValueAtTime(660,c.currentTime+0.1);g.gain.setValueAtTime(0.08,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.12);o.start();o.stop(c.currentTime+0.12);}catch(e){}}
+function playRadioStatic(){try{const c=getAudio(),buf=c.createBuffer(1,c.sampleRate*0.3,c.sampleRate),d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*0.05;const s=c.createBufferSource(),g=c.createGain();s.buffer=buf;s.connect(g);g.connect(c.destination);g.gain.setValueAtTime(0.25,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.3);s.start();}catch(e){}}
+function playSuccess(){try{const c=getAudio();[0,0.1,0.2].forEach((d,i)=>{const o=c.createOscillator(),g=c.createGain();o.type='sine';o.connect(g);g.connect(c.destination);o.frequency.setValueAtTime([523,659,784][i],c.currentTime+d);g.gain.setValueAtTime(0.1,c.currentTime+d);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+d+0.2);o.start(c.currentTime+d);o.stop(c.currentTime+d+0.2);});}catch(e){}}
+
+// ── TYPEWRITER ──
+const twLines=["Another Operator needs saving...","I've seen your KD. Let's talk.","Your loadout is a cry for help.","Stand by for mission briefing.","Drop spot? I've got you covered.","The gulag waits for no one."];
+let twLine=0,twChar=0,twTyping=true;
+const twEl=document.getElementById('typewriter');
+function typewrite(){
+  const line=twLines[twLine];
+  if(twTyping){twEl.textContent=line.slice(0,twChar++);if(twChar>line.length){twTyping=false;setTimeout(typewrite,1800);return;}setTimeout(typewrite,55);}
+  else{twEl.textContent=line.slice(0,twChar--);if(twChar<0){twTyping=true;twChar=0;twLine=(twLine+1)%twLines.length;setTimeout(typewrite,400);return;}setTimeout(typewrite,28);}
+}
+typewrite();
+
+// ── INTRO ──
+document.getElementById('btn-start').addEventListener('click',()=>{
+  playClick();
+  document.getElementById('intro').classList.add('out');
+  setTimeout(()=>{
+    document.getElementById('intro').style.display='none';
+    document.getElementById('app').classList.add('visible');
+    loadPlaylist();
+  },600);
+});
+
+// ── NAV ──
+document.querySelectorAll('.nav-link').forEach(link=>{
+  link.addEventListener('click',function(){
+    playClick();
+    document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    this.classList.add('active');
+    document.getElementById('page-'+this.dataset.page).classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+});
+
+// ── QOPTS (quick option buttons on non-briefing pages) ──
+const qState={};
+document.querySelectorAll('.qopt').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    playSelect();
+    const group=this.dataset.group;
+    document.querySelectorAll(`[data-group="${group}"]`).forEach(b=>b.classList.remove('sel'));
+    this.classList.add('sel');
+    qState[group]=this.dataset.val;
+    updatePageBtns();
+  });
+});
+
+function updatePageBtns(){
+  // Drop spots
+  const dropBtn=document.getElementById('drop-btn');
+  if(dropBtn) dropBtn.disabled=!(qState['drop-map']&&qState['drop-style']&&qState['drop-squad']);
+  // Meta
+  const metaBtn=document.getElementById('meta-btn');
+  if(metaBtn) metaBtn.disabled=!qState['meta-map'];
+  // Gulag
+  const gulagBtn=document.getElementById('gulag-btn');
+  if(gulagBtn) gulagBtn.disabled=!(qState['gulag-weapon']&&qState['gulag-death']&&qState['gulag-approach']);
+  // Library
+  const libBtn=document.getElementById('lib-btn');
+  if(libBtn) libBtn.disabled=!(qState['lib-style']&&qState['lib-map']);
+}
+
+// ── API CALL HELPER ──
+async function callClutch(prompt,resultEl){
+  resultEl.innerHTML=`<div class="spinner-wrap"><div class="spinner"></div><div class="spinner-label">Commander Clutch is on it<span style="animation:dots 1.5s steps(4,end) infinite"></span></div></div>`;
+  playRadioStatic();
+  try{
+    const res=await fetch('/api/clutch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({customPrompt:prompt})});
+    const data=await res.json();
+    if(!res.ok||data.error)throw new Error(JSON.stringify(data.error));
+    playSuccess();
+    return data.result;
+  }catch(e){
+    resultEl.innerHTML=`<div class="ai-result"><span class="ai-label">🎖️ Commander Clutch</span>Comms jammed. Try again, Operator.<br><small style="color:var(--text3)">${e.message}</small></div>`;
+    return null;
+  }
+}
+
+function renderAI(text,el){
+  const clean=text.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/^#{1,3} (.+)/gm,'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:18px;letter-spacing:0.05em;color:var(--text);margin:1rem 0 6px;">$1</div>').replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>');
+  el.innerHTML=`<div class="ai-result"><span class="ai-label">🎖️ Commander Clutch</span>${clean}</div>`;
+}
+
+// ── DROP SPOTS ──
+document.getElementById('drop-btn').addEventListener('click',async()=>{
+  playClick();
+  const el=document.getElementById('drop-result');
+  const prompt=`You are Commander Clutch, brutally honest Warzone AI coach with military humor.
+A player wants a drop spot recommendation:
+- Map: ${qState['drop-map']}
+- Playstyle: ${qState['drop-style']}
+- Squad size: ${qState['drop-squad']}
+
+Give them:
+## YOUR DROP ZONE
+Name 2-3 specific locations on that map that perfectly fit their playstyle and squad size. For each location explain WHY it fits them specifically — loot density, engagement distances, rotation options, enemy traffic levels.
+
+## LANDING STRATEGY
+Exactly how to land — where to touch down first, what to grab, where to rotate immediately after landing.
+
+## CLUTCH'S WARNING
+One thing to watch out for at these spots that kills players who don't know the map well. Say it in Commander Clutch voice — short, punchy, a little threatening.
+
+Be specific to that map. Use real POI names. Keep Commander Clutch voice throughout — military, sharp, funny but useful.`;
+  const result=await callClutch(prompt,el);
+  if(result)renderAI(result,el);
+});
+
+// ── META WATCH ──
+document.getElementById('meta-btn').addEventListener('click',async()=>{
+  playClick();
+  const el=document.getElementById('meta-result');
+  const prompt=`You are Commander Clutch, Warzone AI coach. A player wants the current Season 3 Reloaded meta report for: ${qState['meta-map']}.
+
+Give them a full meta breakdown:
+
+## WHAT'S BROKEN RIGHT NOW
+The 2-3 weapons that are genuinely overpowered in the current meta. Name them, give their tier (S/A/B), and say exactly why they're broken. Be opinionated.
+
+## WHAT GOT NERFED
+2 weapons that used to be meta but got hit. What happened to them. Should players still run them?
+
+## SLEPT ON PICKS
+1-2 weapons that are underrated and players should be running but aren't. Why they work.
+
+## CLUTCH'S VERDICT
+One paragraph on the overall current meta vibe — is it a sniper meta? SMG meta? What's dominating and why. Keep it punchy and in Commander Clutch voice.
+
+Use real Warzone weapon names. Be specific. Season 3 Reloaded 2025.`;
+  const result=await callClutch(prompt,el);
+  if(result)renderAI(result,el);
+});
+
+// ── GULAG COACH ──
+document.getElementById('gulag-btn').addEventListener('click',async()=>{
+  playClick();
+  const el=document.getElementById('gulag-result');
+  const prompt=`You are Commander Clutch. An Operator just died and is in the gulag.
+Their situation:
+- Weapon: ${qState['gulag-weapon']}
+- How they died: ${qState['gulag-death']}
+- Their usual gulag approach: ${qState['gulag-approach']}
+
+Give them a fast, punchy gulag strategy:
+
+## CLUTCH'S GULAG ASSESSMENT
+React to how they died and their approach in Commander Clutch voice. Be sharp and a little roasty. Max 2 sentences.
+
+## YOUR GULAG GAMEPLAN
+Step by step what they should do in the next 30 seconds with their specific weapon. Movement, positioning, when to engage. Numbered list. Concrete. No fluff.
+
+## THE MENTAL GAME
+One sentence on the mindset they need to win this gulag. Commander Clutch signing off.
+
+Keep it SHORT. They don't have time to read an essay. They're in the gulag.`;
+  const result=await callClutch(prompt,el);
+  if(result)renderAI(result,el);
+});
+
+// ── LOADOUT LIBRARY ──
+document.getElementById('lib-btn').addEventListener('click',async()=>{
+  playClick();
+  const el=document.getElementById('lib-result');
+  const prompt=`You are Commander Clutch. Generate a complete loadout library for:
+- Playstyle: ${qState['lib-style']}
+- Map: ${qState['lib-map']}
+
+Provide exactly 3 complete loadouts:
+
+## LOADOUT 1 — [Creative Name]
+**Primary:** [Weapon name]
+Muzzle: [attachment]
+Barrel: [attachment]
+Optic: [attachment]
+Underbarrel: [attachment]
+Magazine/Stock: [attachment]
+**Secondary:** [Weapon name with 5 attachments]
+**Perks:** [Full perk package]
+**Lethal:** [item] | **Tactical:** [item]
+*Why this works:* [1 sentence in Clutch voice]
+
+## LOADOUT 2 — [Creative Name]
+[Same format]
+
+## LOADOUT 3 — [Creative Name]
+[Same format]
+
+## CLUTCH'S PICK
+Which of the 3 he'd personally run and why. One punchy sentence.
+
+Use current Season 3 Reloaded meta weapons. Real attachment names only.`;
+  const result=await callClutch(prompt,el);
+  if(result)renderAI(result,el);
+});
+
+// ── STREAM TOOLKIT ──
+let activeTool=null;
+document.querySelectorAll('.toolkit-btn').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    playSelect();
+    document.querySelectorAll('.toolkit-btn').forEach(b=>b.classList.remove('active-tool'));
+    this.classList.add('active-tool');
+    activeTool=this.dataset.tool;
+    const inputWrap=document.getElementById('stream-tool-inputs');
+    const label=document.getElementById('stream-context-label');
+    const streamBtn=document.getElementById('stream-btn');
+    const contexts={
+      title:'Tell Clutch about your current session (map, mode, vibe)',
+      overlay:'Describe your stream setup and aesthetic',
+      thumbnail:'Describe the clip or moment you want to thumbnail',
+      hooks:'What kind of content do you make? (highlights, educational, funny moments)',
+      bio:'Tell Clutch about yourself as a streamer',
+      schedule:'How much time per week can you dedicate to content?'
+    };
+    label.textContent=contexts[activeTool]||'Tell Clutch about your stream';
+    inputWrap.style.display='block';
+    streamBtn.style.display='inline-block';
+    document.getElementById('stream-result').innerHTML='';
+  });
+});
+
+document.getElementById('stream-btn').addEventListener('click',async()=>{
+  playClick();
+  const input=document.getElementById('stream-input').value.trim();
+  const el=document.getElementById('stream-result');
+  const prompts={
+    title:`You are Commander Clutch. Generate 8 stream titles for a Warzone session. Context: "${input||'Warzone gameplay'}". Make them click-worthy, energetic, specific to Warzone culture. Mix of styles — some hype, some self-aware funny, some dramatic. Format as a numbered list. No generic titles.`,
+    overlay:`You are Commander Clutch. Give specific Twitch/OBS overlay recommendations for this streamer: "${input||'Warzone streamer'}". Cover: layout zones (cam, chat, alerts), which widgets to show, color scheme that fits Warzone aesthetic, specific stream elements that make Warzone content more watchable. Be specific and actionable.`,
+    thumbnail:`You are Commander Clutch. Generate 5 YouTube thumbnail concepts for this clip/content: "${input||'Warzone highlight'}". For each give: main visual element, text overlay, color scheme, emotion/expression to convey. Make them actually click-worthy for the Warzone audience.`,
+    hooks:`You are Commander Clutch. Write 6 video/stream opening hooks for this creator: "${input||'Warzone content creator'}". Each hook should grab attention in the first 5 seconds. Mix of styles — surprising stat, bold claim, funny observation, dramatic setup. Keep Commander Clutch voice.`,
+    bio:`You are Commander Clutch. Write a killer Twitch/YouTube bio for this streamer: "${input||'Warzone streamer'}". Make it personality-driven, mention their niche, include a call to action. Keep it punchy — under 150 words. Then write an alternate shorter version under 50 words.`,
+    schedule:`You are Commander Clutch. Create a weekly content schedule for this creator: "${input||'Warzone content creator'}". Include: stream days/times recommendation, YouTube upload frequency, short-form content (TikTok/Reels/Shorts) plan, what type of content to post each day. Be realistic and specific to Warzone growth.`
+  };
+  const result=await callClutch(prompts[activeTool]||prompts.title,el);
+  if(result)renderAI(result,el);
+});
+
+// ── LIVE PLAYLIST LOADER ──
+const MAP_ICONS = {
+  'Verdansk': '🏙️',
+  'Avalon': '🏝️',
+  "Haven's Hollow": '🌿',
+  'Rebirth Island': '🏭',
+  'Urzikstan': '🏔️',
+  "Fortune's Keep": '🏰',
+  'Ashika Island': '🌊',
+  'Area 99': '🏗️',
+};
+
+const MODE_ICONS = {
+  'Battle Royale': '🎯',
+  'Resurgence': '🔄',
+  'Plunder': '💰',
+  'Ranked': '🏆',
+  'Casual': '😎',
+};
+
+function getModeIcon(mode) {
+  for (const [key, icon] of Object.entries(MODE_ICONS)) {
+    if (mode.includes(key)) return icon;
+  }
+  return '🎮';
+}
+
+function makeQopt(group, val, icon, label, desc='', extra='') {
+  const btn = document.createElement('button');
+  btn.className = 'qopt' + (extra ? ' ' + extra : '');
+  btn.dataset.group = group;
+  btn.dataset.val = val;
+  btn.innerHTML = `<span class="qopt-icon">${icon}</span><span class="qopt-label">${label}</span>${desc ? `<span style="font-size:10px;color:var(--text3);display:block;margin-top:2px;">${desc}</span>` : ''}`;
+  btn.addEventListener('click', function() {
+    playSelect();
+    document.querySelectorAll(`[data-group="${group}"]`).forEach(b => b.classList.remove('sel'));
+    this.classList.add('sel');
+    qState[group] = val;
+    updatePageBtns();
+  });
+  return btn;
+}
+
+function makeOpt(step, val, icon, label, desc='') {
+  const btn = document.createElement('button');
+  btn.className = 'opt';
+  btn.dataset.val = val;
+  btn.innerHTML = `<span class="opt-icon">${icon}</span><span class="opt-label">${label}</span>${desc ? `<span class="opt-desc">${desc}</span>` : ''}`;
+  btn.addEventListener('click', function() {
+    playSelect();
+    const s = this.closest('.step');
+    const idx = parseInt(s.dataset.step);
+    s.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+    this.classList.add('selected');
+    answers[idx] = val;
+    document.getElementById('btn-next').classList.add('ready');
+  });
+  return btn;
+}
+
+let livePlaylist = null;
+
+async function loadPlaylist() {
+  try {
+    const res = await fetch('/api/playlist');
+    if (!res.ok) throw new Error('Playlist fetch failed');
+    livePlaylist = await res.json();
+    renderPlaylistOptions();
+  } catch(e) {
+    // Fallback
+    livePlaylist = {
+      season: 'Season 3 Reloaded',
+      modes: [
+        { mode: 'Battle Royale', label: 'Battle Royale', maps: ['Verdansk', 'Avalon'], squads: ['Quads'] },
+        { mode: 'Hot Pursuit', label: 'Hot Pursuit (LTM)', maps: ['Avalon'], squads: ['Solos', 'Quads'], isLTM: true },
+        { mode: 'Resurgence', label: 'Resurgence', maps: ["Haven's Hollow", 'Rebirth Island'], squads: ['Solos', 'Duos', 'Quads'] },
+        { mode: 'Battle Royale Casual', label: 'BR Casual', maps: ['Verdansk', 'Avalon'], squads: ['Quads'] },
+        { mode: 'Plunder', label: 'Plunder', maps: ['Verdansk'], squads: ['Quads'] },
+      ],
+      maps: ['Verdansk', 'Avalon', "Haven's Hollow", 'Rebirth Island']
+    };
+    renderPlaylistOptions();
+  }
+}
+
+function renderPlaylistOptions() {
+  if (!livePlaylist) return;
+
+  // Update season badge
+  document.querySelectorAll('.season-badge, .intro-sub').forEach(el => {
+    if (livePlaylist.season) el.textContent = el.textContent.replace(/Season \d+ Reloaded|Season \d+/i, livePlaylist.season);
+  });
+
+  // ── BRIEFING: Mode options (step 0) ──
+  const modeOpts = document.getElementById('mode-opts');
+  if (modeOpts) {
+    modeOpts.innerHTML = '';
+    livePlaylist.modes.forEach(m => {
+      const squadsText = m.squads.join(', ');
+      const val = `${m.label} (${squadsText} on ${m.maps.join('/')})`;
+      const icon = getModeIcon(m.mode);
+      const label = m.label;
+      const desc = m.squads.join(' · ');
+      modeOpts.appendChild(makeOpt(0, val, icon, label, desc));
+    });
+  }
+
+  // ── BRIEFING: Map options (step 1) ──
+  const mapOpts = document.getElementById('map-opts');
+  if (mapOpts) {
+    mapOpts.innerHTML = '';
+    livePlaylist.maps.forEach(map => {
+      mapOpts.appendChild(makeOpt(1, map, MAP_ICONS[map] || '🗺️', map));
+    });
+  }
+
+  // ── DROP SPOTS: Map options ──
+  const dropMapOpts = document.getElementById('drop-map-opts');
+  if (dropMapOpts) {
+    dropMapOpts.innerHTML = '';
+    livePlaylist.maps.forEach(map => {
+      dropMapOpts.appendChild(makeQopt('drop-map', map, MAP_ICONS[map] || '🗺️', map));
+    });
+  }
+
+  // ── DROP SPOTS: Squad options (from all available squads) ──
+  const dropSquadOpts = document.getElementById('drop-squad-opts');
+  if (dropSquadOpts) {
+    dropSquadOpts.innerHTML = '';
+    const allSquads = [...new Set(livePlaylist.modes.flatMap(m => m.squads))];
+    const squadIcons = { 'Solos': '🎯', 'Duos': '👥', 'Trios': '👥', 'Quads': '🪖' };
+    allSquads.forEach(squad => {
+      dropSquadOpts.appendChild(makeQopt('drop-squad', squad, squadIcons[squad] || '👥', squad));
+    });
+  }
+
+  // ── META WATCH: Map options ──
+  const metaMapOpts = document.getElementById('meta-map-opts');
+  if (metaMapOpts) {
+    metaMapOpts.innerHTML = '';
+    livePlaylist.maps.forEach(map => {
+      metaMapOpts.appendChild(makeQopt('meta-map', map, MAP_ICONS[map] || '🗺️', map));
+    });
+    metaMapOpts.appendChild(makeQopt('meta-map', 'all maps', '🌍', 'All Maps'));
+  }
+
+  // ── LOADOUT LIBRARY: Map options ──
+  const libMapOpts = document.getElementById('lib-map-opts');
+  if (libMapOpts) {
+    libMapOpts.innerHTML = '';
+    livePlaylist.maps.forEach(map => {
+      libMapOpts.appendChild(makeQopt('lib-map', map, MAP_ICONS[map] || '🗺️', map));
+    });
+    libMapOpts.appendChild(makeQopt('lib-map', 'any map', '🌍', 'Any Map'));
+  }
+
+  updatePageBtns();
+}
+
+// ── BRIEFING QUESTIONNAIRE ──
+const totalSteps=7;const answers={};let currentStep=0;
+function buildProgress(){
+  const p=document.getElementById('progress');p.innerHTML='';
+  for(let i=0;i<totalSteps;i++){const pip=document.createElement('div');pip.className='pip'+(i<currentStep?' done':i===currentStep?' active':'');p.appendChild(pip);}
+  document.getElementById('progress-label').textContent=`Step ${currentStep+1} of ${totalSteps}`;
+}
+function showStep(n){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.step')[n].classList.add('active');
+  document.getElementById('btn-back').style.visibility=n===0?'hidden':'visible';
+  const nb=document.getElementById('btn-next');
+  nb.textContent=n===totalSteps-1?'Get My Briefing →':'Next →';
+  nb.classList.toggle('ready',!!answers[n]);
+  buildProgress();
+}
+document.querySelectorAll('.opt').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    playSelect();
+    const step=this.closest('.step');const idx=parseInt(step.dataset.step);
+    step.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+    this.classList.add('selected');answers[idx]=this.dataset.val;
+    document.getElementById('btn-next').classList.add('ready');
+  });
+});
+document.getElementById('btn-next').addEventListener('click',()=>{
+  if(!answers[currentStep])return;playClick();
+  if(currentStep<totalSteps-1){currentStep++;showStep(currentStep);}
+  else launchBriefing();
+});
+document.getElementById('btn-back').addEventListener('click',()=>{if(currentStep>0){playClick();currentStep--;showStep(currentStep);}});
+document.getElementById('btn-restart').addEventListener('click',()=>{
+  Object.keys(answers).forEach(k=>delete answers[k]);currentStep=0;
+  document.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+  document.getElementById('questionnaire').style.display='block';
+  document.getElementById('result-wrap').classList.remove('show');
+  showStep(0);
+});
+
+function cleanMd(t){return t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/^- /gm,'• ').replace(/\n/g,'<br>');}
+function tierBadge(k){if(k==='PRIMARY LOADOUT')return '<span class="tier tier-s">S TIER</span>';if(k==='SECONDARY LOADOUT')return '<span class="tier tier-a">A TIER</span>';return '';}
+function parseResult(text){
+  const keys=['CLUTCH ASSESSMENT','PRIMARY LOADOUT','SECONDARY LOADOUT','PERKS & EQUIPMENT','MISSION ORDERS','STREAM GROWTH INTEL','FINAL VERDICT'];
+  const parsed={};let current=null;
+  text.split('\n').forEach(line=>{const m=keys.find(k=>line.toUpperCase().includes(k));if(m){current=m;parsed[m]='';}else if(current!==null){parsed[current]+=line+'\n';}});
+  return parsed;
+}
+let shareText='',sections={};
+function renderResult(ps){
+  sections=ps;
+  const wantsStream=answers[6]&&answers[6].includes('stream');
+  const tags=[answers[0],answers[1],answers[4]].filter(Boolean);
+  let html=`<div class="debrief-header"><div class="debrief-title">Mission Briefing Complete</div><div class="debrief-sub">Commander Clutch has reviewed your intel</div></div>`;
+  html+=`<div class="tags">${tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>`;
+  if(ps['CLUTCH ASSESSMENT']&&ps['CLUTCH ASSESSMENT'].trim())html+=`<div class="clutch-msg"><span class="clutch-label">🎖️ Commander Clutch</span>${cleanMd(ps['CLUTCH ASSESSMENT'].trim())}</div>`;
+  const cards=[{key:'PRIMARY LOADOUT',label:'Primary loadout'},{key:'SECONDARY LOADOUT',label:'Secondary loadout'},{key:'PERKS & EQUIPMENT',label:'Perks & equipment'},{key:'MISSION ORDERS',label:'Mission orders — fix your weakness'}];
+  if(wantsStream)cards.push({key:'STREAM GROWTH INTEL',label:'Stream growth intel'});
+  cards.push({key:'FINAL VERDICT',label:'Final verdict'});
+  const primary=ps['PRIMARY LOADOUT']?ps['PRIMARY LOADOUT'].trim().split('\n')[0].replace(/\*\*/g,''):'';
+  const verdict=ps['FINAL VERDICT']?ps['FINAL VERDICT'].trim().replace(/\*\*/g,''):'';
+  shareText=`🎖️ Commander Clutch just briefed me on my Warzone loadout!\n\n${primary}\n\n"${verdict}"\n\nGet your briefing at commanderclutch.vercel.app`;
+  cards.forEach(({key,label})=>{const content=ps[key]?ps[key].trim():'';if(!content)return;html+=`<div class="result-card"><div class="card-title-row">${label}${tierBadge(key)}</div><div class="result-body">${cleanMd(content)}</div></div>`;});
+  document.getElementById('result-content').innerHTML=html;
+  playSuccess();
+}
+
+// SHARE
+document.getElementById('btn-x').addEventListener('click',()=>{
+  playClick();
+  const cl=sections['CLUTCH ASSESSMENT']?sections['CLUTCH ASSESSMENT'].trim().replace(/<[^>]+>/g,'').replace(/\*\*/g,'').split('.')[0]+'.':'';
+  window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(`this AI Warzone coach just called me out and i can't even be mad 💀\n\n"${cl}"\n\njust built me a whole loadout too. try it yourself 🎖️\ncommanderclutch.vercel.app`)}`,'_blank');
+});
+document.getElementById('btn-instagram').addEventListener('click',async()=>{
+  playClick();
+  const at=sections['CLUTCH ASSESSMENT']?sections['CLUTCH ASSESSMENT'].trim().replace(/\*\*/g,''):'';
+  const pl=sections['PRIMARY LOADOUT']?sections['PRIMARY LOADOUT'].trim().replace(/\*\*/g,'').split('\n'):[];
+  const vt=sections['FINAL VERDICT']?sections['FINAL VERDICT'].trim().replace(/\*\*/g,''):'';
+  document.getElementById('sc-assessment').textContent=at;
+  document.getElementById('sc-weapon').textContent=pl[0]||'';
+  document.getElementById('sc-attachments').textContent=pl.slice(1).filter(l=>l.trim()).join('\n');
+  document.getElementById('sc-verdict').textContent=`"${vt}"`;
+  const btn=document.getElementById('btn-instagram');btn.textContent='⏳ Generating...';btn.disabled=true;
+  try{
+    const c2=await html2canvas(document.getElementById('share-card'),{backgroundColor:'#07080a',scale:2,useCORS:true,logging:false});
+    btn.innerHTML=`<svg viewBox="0 0 24 24" fill="currentColor" style="width:15px;height:15px"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg> Instagram`;btn.disabled=false;
+    c2.toBlob(async blob=>{
+      const file=new File([blob],'commander-clutch-briefing.png',{type:'image/png'});
+      if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'My Commander Clutch Warzone Briefing',text:'Get your free Warzone briefing at commanderclutch.vercel.app'});}
+      else{const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='commander-clutch-briefing.png';a.click();URL.revokeObjectURL(url);const toast=document.getElementById('share-toast');toast.textContent='Image saved! Upload it to Instagram. 🎖️';toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),4000);}
+    },'image/png');
+  }catch(e){btn.textContent='Instagram';btn.disabled=false;}
+});
+document.getElementById('btn-whatsapp').addEventListener('click',()=>{playClick();window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`,'_blank');});
+document.getElementById('btn-messages').addEventListener('click',()=>{playClick();window.open(`sms:?&body=${encodeURIComponent(shareText)}`,'_blank');});
+document.getElementById('btn-copy').addEventListener('click',()=>{playClick();navigator.clipboard.writeText(shareText).then(()=>{const t=document.getElementById('share-toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);});});
+
+async function launchBriefing(){
+  playRadioStatic();
+  document.getElementById('questionnaire').style.display='none';
+  document.getElementById('result-wrap').classList.add('show');
+  document.getElementById('result-content').innerHTML=`<div class="spinner-wrap"><div class="spinner"></div><div class="spinner-label">Commander Clutch is reviewing your intel</div><div style="font-size:12px;color:var(--text3);margin-top:6px;">Pulling live Season 3 meta. Stand by, Operator...</div></div>`;
+  try{
+    const res=await fetch('/api/clutch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({answers})});
+    const data=await res.json();
+    if(!res.ok||data.error)throw new Error(JSON.stringify(data.error));
+    renderResult(parseResult(data.result));
+  }catch(e){
+    document.getElementById('result-content').innerHTML=`<div class="clutch-msg"><span class="clutch-label">🎖️ Commander Clutch</span>Comms are jammed, Operator. Check that your API key is set in Vercel environment variables.<div style="font-size:11px;color:var(--text3);margin-top:8px;font-family:monospace">${e.message}</div></div>`;
+  }
+}
+buildProgress();
+</script>
+</body>
+</html>
