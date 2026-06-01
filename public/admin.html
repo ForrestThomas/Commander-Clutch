@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Commander Clutch — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--bg:#07080a;--bg2:#0e0f13;--bg3:#161820;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.14);--accent:#7c6af7;--accent2:#5b4fd4;--text:#eeedf8;--text2:#8b8a99;--text3:#444356;--green:#4ade80;--amber:#fbbf24;--red:#f87171;}
+html,body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;}
+
+/* LOGIN */
+#login{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:1rem;}
+.login-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:0.06em;color:var(--text);}
+.login-sub{font-size:13px;color:var(--text3);font-family:'Barlow Condensed',sans-serif;letter-spacing:0.08em;text-transform:uppercase;}
+.login-input{background:var(--bg2);border:0.5px solid var(--border);border-radius:8px;padding:12px 18px;color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;width:280px;outline:none;transition:border-color 0.15s;}
+.login-input:focus{border-color:var(--accent);}
+.login-btn{background:var(--accent2);border:none;border-radius:8px;padding:12px 32px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.1em;color:#fff;cursor:pointer;transition:background 0.15s;}
+.login-btn:hover{background:var(--accent);}
+.login-err{color:var(--red);font-size:13px;display:none;}
+
+/* DASHBOARD */
+#dashboard{display:none;max-width:1100px;margin:0 auto;padding:2rem 1.25rem 4rem;}
+.dash-header{display:flex;align-items:center;gap:1rem;margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:0.5px solid var(--border);}
+.dash-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.06em;}
+.dash-sub{font-size:12px;color:var(--text3);font-family:'Barlow Condensed',sans-serif;letter-spacing:0.08em;text-transform:uppercase;margin-top:3px;}
+.back-link{margin-left:auto;font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);text-decoration:none;border:0.5px solid var(--border);padding:6px 14px;border-radius:6px;}
+.back-link:hover{color:var(--text);border-color:var(--border2);}
+
+/* STAT CARDS */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:2rem;}
+.stat-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;padding:1.25rem;}
+.stat-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;}
+.stat-value{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:0.04em;color:var(--text);line-height:1;}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:4px;}
+.stat-card.green .stat-value{color:var(--green);}
+.stat-card.amber .stat-value{color:var(--amber);}
+.stat-card.purple .stat-value{color:var(--accent);}
+
+/* TOOL BREAKDOWN */
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.06em;color:var(--text);margin-bottom:1rem;margin-top:2rem;}
+.tool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:2rem;}
+.tool-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:8px;padding:1rem;}
+.tool-name{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text);margin-bottom:8px;}
+.tool-stat{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);padding:3px 0;border-bottom:0.5px solid var(--border);}
+.tool-stat:last-child{border:none;}
+.tool-stat span:last-child{color:var(--text);font-weight:600;}
+
+/* DAILY CHART */
+.day-table{width:100%;border-collapse:collapse;margin-bottom:2rem;font-size:13px;}
+.day-table th{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);text-align:left;padding:8px 12px;border-bottom:0.5px solid var(--border);}
+.day-table td{padding:8px 12px;border-bottom:0.5px solid var(--border);color:var(--text2);}
+.day-table tr:hover td{background:var(--bg3);}
+.day-table td.num{color:var(--text);font-weight:600;}
+.day-table td.cost{color:var(--amber);}
+.day-table td.today{color:var(--green);}
+.bar{height:6px;background:var(--accent2);border-radius:3px;min-width:2px;}
+
+/* RECENT EVENTS */
+.events-table{width:100%;border-collapse:collapse;font-size:12px;}
+.events-table th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);text-align:left;padding:6px 10px;border-bottom:0.5px solid var(--border);}
+.events-table td{padding:6px 10px;border-bottom:0.5px solid var(--border);color:var(--text2);font-family:monospace;font-size:11px;}
+.events-table tr.is-admin td{color:var(--text3);font-style:italic;}
+.events-table tr.is-admin::after{content:' (you)';}
+.tool-badge{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;}
+.tb-briefing{background:rgba(124,106,247,0.15);color:var(--accent);}
+.tb-drop{background:rgba(74,222,128,0.1);color:var(--green);}
+.tb-meta{background:rgba(251,191,36,0.1);color:var(--amber);}
+.tb-gulag{background:rgba(248,113,113,0.1);color:var(--red);}
+.tb-loadouts{background:rgba(124,106,247,0.1);color:#a78bfa;}
+.tb-stream{background:rgba(0,180,200,0.1);color:#22d3ee;}
+.tb-unknown{background:var(--bg3);color:var(--text3);}
+
+.loading{text-align:center;padding:3rem;color:var(--text3);font-family:'Barlow Condensed',sans-serif;letter-spacing:0.1em;text-transform:uppercase;}
+.filter-row{display:flex;align-items:center;gap:10px;margin-bottom:1rem;}
+.filter-toggle{background:none;border:0.5px solid var(--border);border-radius:6px;padding:6px 14px;font-size:12px;font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text2);cursor:pointer;transition:all 0.15s;}
+.filter-toggle.active{border-color:var(--accent);color:var(--accent);background:rgba(124,106,247,0.08);}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="login-title">🎖️ Clutch Admin</div>
+  <div class="login-sub">Mission Control · Restricted Access</div>
+  <input class="login-input" type="password" id="pwd-input" placeholder="Enter password..." autocomplete="off"/>
+  <button class="login-btn" id="login-btn">Authenticate →</button>
+  <div class="login-err" id="login-err">Wrong password, Operator.</div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="dash-header">
+    <div>
+      <div class="dash-title">🎖️ Commander Clutch — Mission Control</div>
+      <div class="dash-sub">Analytics & Cost Dashboard</div>
+    </div>
+    <a href="/" class="back-link">← Back to HQ</a>
+  </div>
+  <div id="dash-content"><div class="loading">Loading intel...</div></div>
+</div>
+
+<script>
+let adminPwd = '';
+let hideAdmin = false;
+
+document.getElementById('pwd-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('login-btn').click();
+});
+
+document.getElementById('login-btn').addEventListener('click', async () => {
+  const pwd = document.getElementById('pwd-input').value.trim();
+  if (!pwd) return;
+  adminPwd = pwd;
+  const res = await fetch(`/api/admin?pwd=${encodeURIComponent(pwd)}`);
+  if (!res.ok) {
+    document.getElementById('login-err').style.display = 'block';
+    return;
+  }
+  const data = await res.json();
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  renderDashboard(data);
+});
+
+function fmt$(n) { return n < 0.01 ? `$${(n*100).toFixed(3)}¢` : `$${n.toFixed(4)}`; }
+function fmtNum(n) { return (n||0).toLocaleString(); }
+
+const TOOLS = ['briefing','drop','meta','gulag','loadouts','stream'];
+const TOOL_LABELS = {briefing:'🎯 Briefing',drop:'🗺️ Drop Spots',meta:'📊 Meta Watch',gulag:'💀 Gulag Coach',loadouts:'🔫 Loadouts',stream:'📺 Stream Kit'};
+
+function renderDashboard(data) {
+  const { allTime, days, recentEvents } = data;
+  const today = days[days.length - 1] || {};
+  const yesterday = days[days.length - 2] || {};
+  const last7 = days.slice(-7);
+  const last7Total = last7.reduce((s,d) => s + (d.total||0), 0);
+  const last7Cost = last7.reduce((s,d) => s + (d.totalCost||0), 0);
+  const last7Users = last7.reduce((s,d) => s + (d.uniqueUsers||0), 0);
+
+  let html = '';
+
+  // TOP STATS
+  html += `<div class="stat-grid">
+    <div class="stat-card green">
+      <div class="stat-label">All-Time Requests</div>
+      <div class="stat-value">${fmtNum(allTime.total)}</div>
+      <div class="stat-sub">Since launch</div>
+    </div>
+    <div class="stat-card amber">
+      <div class="stat-label">All-Time Cost</div>
+      <div class="stat-value">${fmt$(allTime.totalCost||0)}</div>
+      <div class="stat-sub">${fmtNum(allTime.totalTokens)} tokens</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-label">Today's Requests</div>
+      <div class="stat-value">${fmtNum(today.total)}</div>
+      <div class="stat-sub">${fmtNum(today.uniqueUsers)} unique users</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Today's Cost</div>
+      <div class="stat-value" style="color:var(--amber)">${fmt$(today.totalCost||0)}</div>
+      <div class="stat-sub">vs ${fmt$(yesterday.totalCost||0)} yesterday</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Last 7 Days</div>
+      <div class="stat-value" style="color:var(--green)">${fmtNum(last7Total)}</div>
+      <div class="stat-sub">${fmtNum(last7Users)} unique users</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">7-Day Cost</div>
+      <div class="stat-value" style="color:var(--amber)">${fmt$(last7Cost)}</div>
+      <div class="stat-sub">~${fmt$(last7Cost/7)}/day avg</div>
+    </div>
+  </div>`;
+
+  // TOOL BREAKDOWN
+  html += `<div class="section-title">Tool Breakdown — All Time</div>`;
+  html += `<div class="tool-grid">`;
+  TOOLS.forEach(tool => {
+    const count = allTime[tool] || 0;
+    const cost = allTime[`${tool}_cost`] || 0;
+    const pct = allTime.total ? Math.round((count/allTime.total)*100) : 0;
+    html += `<div class="tool-card">
+      <div class="tool-name">${TOOL_LABELS[tool]||tool}</div>
+      <div class="tool-stat"><span>Requests</span><span>${fmtNum(count)} (${pct}%)</span></div>
+      <div class="tool-stat"><span>Total Cost</span><span>${fmt$(cost)}</span></div>
+      <div class="tool-stat"><span>Avg Cost</span><span>${count ? fmt$(cost/count) : '$0'}</span></div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // DAILY TABLE
+  html += `<div class="section-title">Daily Breakdown — Last 14 Days</div>`;
+  const maxDaily = Math.max(...days.map(d => d.total||0), 1);
+  html += `<table class="day-table"><thead><tr>
+    <th>Date</th><th>Requests</th><th>Unique Users</th><th>Cost</th><th>Tokens</th><th>Breakdown</th>
+  </tr></thead><tbody>`;
+  [...days].reverse().forEach((d, i) => {
+    const isToday = i === 0;
+    const barW = Math.max(4, Math.round(((d.total||0)/maxDaily)*120));
+    const toolBreak = TOOLS.filter(t => d[t]).map(t => `${TOOL_LABELS[t]||t}: ${d[t]}`).join(' · ');
+    html += `<tr>
+      <td class="${isToday?'today':''}">${d.date}${isToday?' (today)':''}</td>
+      <td class="num"><div style="display:flex;align-items:center;gap:8px;"><span>${fmtNum(d.total)}</span><div class="bar" style="width:${barW}px"></div></div></td>
+      <td class="num">${fmtNum(d.uniqueUsers)}</td>
+      <td class="cost">${fmt$(d.totalCost||0)}</td>
+      <td>${fmtNum(d.totalTokens)}</td>
+      <td style="color:var(--text3);font-size:11px;">${toolBreak||'—'}</td>
+    </tr>`;
+  });
+  html += `</tbody></table>`;
+
+  // RECENT EVENTS
+  html += `<div class="section-title">Recent Events</div>`;
+  html += `<div class="filter-row">
+    <span style="font-size:12px;color:var(--text3);font-family:'Barlow Condensed',sans-serif;letter-spacing:0.06em;text-transform:uppercase;">Filter:</span>
+    <button class="filter-toggle active" id="toggle-admin" onclick="toggleAdmin(this)">Hide your tests</button>
+  </div>`;
+  html += `<table class="events-table"><thead><tr>
+    <th>Time</th><th>Tool</th><th>Tokens In</th><th>Tokens Out</th><th>Cost</th><th>IP</th><th>Status</th>
+  </tr></thead><tbody id="events-body">`;
+
+  recentEvents.forEach(e => {
+    const badgeClass = `tb-${e.tool||'unknown'}`;
+    html += `<tr class="${e.isAdmin?'is-admin':''}" data-admin="${e.isAdmin?'1':'0'}">
+      <td>${e.time||new Date(e.ts).toLocaleString()}</td>
+      <td><span class="tool-badge ${badgeClass}">${e.tool||'?'}</span>${e.isAdmin?' 👤 you':''}</td>
+      <td>${fmtNum(e.inputTokens)}</td>
+      <td>${fmtNum(e.outputTokens)}</td>
+      <td style="color:var(--amber)">${fmt$(e.cost||0)}</td>
+      <td style="color:var(--text3)">${e.ip||'?'}</td>
+      <td>${e.success?'<span style="color:var(--green)">✓</span>':'<span style="color:var(--red)">✗</span>'}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table>`;
+  html += `<div style="margin-top:2rem;padding-top:1.5rem;border-top:0.5px solid var(--border);text-align:center;font-size:11px;color:var(--text3);font-family:'Barlow Condensed',sans-serif;">Commander Clutch Mission Control · Restricted Access</div>`;
+
+  document.getElementById('dash-content').innerHTML = html;
+}
+
+function toggleAdmin(btn) {
+  hideAdmin = !hideAdmin;
+  btn.classList.toggle('active', hideAdmin);
+  btn.textContent = hideAdmin ? 'Showing all' : 'Hide your tests';
+  document.querySelectorAll('#events-body tr').forEach(row => {
+    if (row.dataset.admin === '1') {
+      row.style.display = hideAdmin ? 'none' : '';
+    }
+  });
+}
+</script>
+</body>
+</html>
