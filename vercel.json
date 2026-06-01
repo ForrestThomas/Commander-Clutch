@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "functions": {
+    "api/clutch.js": { "maxDuration": 60 },
+    "api/playlist.js": { "maxDuration": 30 },
+    "api/analytics.js": { "maxDuration": 10 },
+    "api/admin.js": { "maxDuration": 15 }
+  },
+  "builds": [
+    { "src": "api/*.js", "use": "@vercel/node" },
+    { "src": "public/**", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/admin", "dest": "/public/admin.html" },
+    { "src": "/(.*)", "dest": "/public/$1" }
+  ]
+}
