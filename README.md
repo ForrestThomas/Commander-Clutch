@@ -2,7 +2,7 @@
 
 ## Deploy to Vercel (10 minutes)
 
-### Step 1 — Get a free Vercel account
+### Step 1 — Get a free Vercel account  
 Go to https://vercel.com and sign up free. No credit card needed.
 
 ### Step 2 — Install Vercel CLI (or use the web UI)
